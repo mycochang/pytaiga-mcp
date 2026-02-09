@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-taiga-bridge"
-version = "1.0.0"
+version = "0.1.0"
 description = "Taiga integration bridge for MCP"
 requires-python = ">=3.10"
 authors = [{ name = "Talha Orak", email = "talhaorak.git@gmail.com" }]
@@ -60,6 +60,15 @@ markers = [
 ]
 addopts = "-v"
 
+[tool.uv.sources]
+pytaigaclient = { git = "https://github.com/talhaorak/pyTaigaClient.git" }
+
+[dependency-groups]
+dev = [
+    "python-semantic-release>=10.5.3",
+    "types-requests>=2.32.4.20260107",
+]
+
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 branch = "master"
@@ -77,11 +86,3 @@ token = { env = "GH_TOKEN" }
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
-
-[tool.uv.sources]
-pytaigaclient = { git = "https://github.com/talhaorak/pyTaigaClient.git" }
-
-[dependency-groups]
-dev = [
-    "python-semantic-release>=10.5.3",
-]
