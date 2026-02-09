@@ -65,5 +65,24 @@ pytaigaclient = { git = "https://github.com/talhaorak/pyTaigaClient.git" }
 
 [dependency-groups]
 dev = [
+    "python-semantic-release>=10.5.3",
     "types-requests>=2.32.4.20260107",
 ]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "master"
+commit_message = "chore(release): v{version}"
+build_command = ""
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
