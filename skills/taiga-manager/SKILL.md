@@ -28,7 +28,16 @@ Do not assume Project IDs or names. Always **Orient** first by:
     *   **Blockers:** Filter for `is_blocked=True`.
     *   **Risks:** Identify high-priority items not yet in progress.
 4.  **Act:**
-    *   Report: "Active Sprint: [Name]. Blocked Items: [List]. Attention Needed: [List]."
+    *   Report: "Active Sprint: [Name]"
+    *   **Format:** Present the data in a clear ASCII table or structured Markdown list.
+    *   **Style:** Use emojis to indicate status (e.g., 🔴 Blocked, 🟡 High Risk, 🟢 On Track).
+    *   Example:
+        ```text
+        | ID  | Status | Subject                     | Owner       |
+        |-----|--------|-----------------------------|-------------|
+        | 123 | 🔴 BLK | Fix production crash        | @backend    |
+        | 124 | 🟡 WIP | Implement login             | @frontend   |
+        ```
 
 ### 2. The Doctor (Health Check)
 **Trigger:** "Check project health", "Why is Taiga failing?", "Verify integrity"
@@ -42,8 +51,14 @@ Do not assume Project IDs or names. Always **Orient** first by:
     *   **Verify Read:** `get_project(id)` for each.
     *   **Verify Write (Dry Run):** Check if metadata (like `userstory_custom_attributes`) is accessible.
 3.  **Report:**
-    *   "Healthy Projects: [List]"
-    *   "Issues Found: [List with IDs and error details]"
+    *   Present a **Health Dashboard**:
+    *   Example:
+        ```text
+        PROJECT HEALTH DASHBOARD
+        ========================
+        🟢 Project 10 (Platform) ....... OK (Read/Write verified)
+        🔴 Project 9  (Security) ....... CORRUPTED (JSON DataError) - READ ONLY
+        ```
 
 ### 3. Sprint Planning (Backlog Refinement)
 **Trigger:** "Plan the next sprint", "Refine backlog"
