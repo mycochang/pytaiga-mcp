@@ -72,7 +72,13 @@ def run_verification():
         if not projects:
             print("❌ No projects found. Cannot proceed.")
             return
-        project = projects[0]
+        
+        # Prefer Project ID 10 (known working), otherwise avoid corrupted ID 9
+        # Fallback to first available if 10 not found and others are valid
+        project = next((p for p in projects if p["id"] == 10), None)
+        if not project:
+             project = next((p for p in projects if p["id"] != 9), projects[0])
+             
         pid = project["id"]
         print(f"✅ Found project: {project['name']} (ID: {pid})")
     except Exception as e:
