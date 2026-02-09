@@ -721,8 +721,9 @@ def update_project(
             )
 
         # The project update method requires project_id, version, and project_data
-        updated_project = taiga_client_wrapper.get_api().projects.update(
-            project_id=project_id, version=version, project_data=parsed_kwargs
+        # Use edit() for partial updates (PATCH) instead of update() (PUT)
+        updated_project = taiga_client_wrapper.get_api().projects.edit(
+            project_id=project_id, version=version, **parsed_kwargs
         )
 
         logger.info(f"Project {project_id} update request sent.")
@@ -1125,6 +1126,27 @@ def unassign_task_from_user(task_id: int, session_id: Optional[str] = None) -> D
     )
     # Delegate to update_task with assigned_to=None
     return update_task(task_id, json.dumps({"assigned_to": None}), actual_session_id)
+
+
+@mcp.tool(
+    "get_task_statuses",
+    description="Lists the available statuses for tasks within a specific project. Uses default session if session_id not provided.",
+)
+def get_task_statuses(project_id: int, session_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieves the list of task statuses for a project."""
+    actual_session_id = _get_session_id(session_id)
+    logger.info(
+        f"Executing get_task_statuses for project {project_id}, session {actual_session_id[:8]}..."
+    )
+    taiga_client_wrapper = _get_authenticated_client(actual_session_id)
+
+    return _execute_taiga_operation(
+        "get_task_statuses",
+        lambda: taiga_client_wrapper.get_api().task_statuses.list(
+            query_params={"project": project_id}
+        ),
+        f"project {project_id}",
+    )
 
 
 # --- Issue Tools ---

@@ -15,9 +15,9 @@ from src.server import (
 )
 
 # Test constants - use environment variables or defaults for testing
-TEST_HOST = os.environ.get("TAIGA_TEST_HOST", "http://localhost:9000")
-TEST_USERNAME = os.environ.get("TAIGA_TEST_USERNAME", "test")
-TEST_PASSWORD = os.environ.get("TAIGA_TEST_PASSWORD", "test")
+TEST_HOST = os.environ.get("TAIGA_TEST_HOST", os.environ.get("TAIGA_API_URL", "http://localhost:9000"))
+TEST_USERNAME = os.environ.get("TAIGA_TEST_USERNAME", os.environ.get("TAIGA_USERNAME", "test"))
+TEST_PASSWORD = os.environ.get("TAIGA_TEST_PASSWORD", os.environ.get("TAIGA_PASSWORD", "test"))
 
 
 @pytest.mark.integration  # Mark these to run separately
@@ -36,8 +36,10 @@ class TestTaigaIntegration:
         # Verify we got at least one project
         assert len(projects) > 0, "No projects found in your Taiga account"
 
-        # Get the first project ID for further tests
-        project_id = projects[0]["id"]
+        # Prefer Project ID 10 (known working), otherwise avoid corrupted ID 9
+        project_id = next((p["id"] for p in projects if p["id"] == 10), None)
+        if not project_id:
+            project_id = next((p["id"] for p in projects if p["id"] != 9), projects[0]["id"])
 
         # 2. Get details of a specific project - note: project_id first, then session_id
         project = get_project(project_id, session_id)
@@ -47,14 +49,14 @@ class TestTaigaIntegration:
         original_name = project["name"]
 
         try:
-            # 3. Update the project with a timestamp - note: project_id first, then session_id
+            # 3. Update the project with a timestamp - note: project_id first, then kwargs dict, then session_id
             new_name = f"{original_name} (Test {time.time()})"
-            updated = update_project(project_id, session_id, name=new_name)
+            updated = update_project(project_id, {"name": new_name}, session_id)
             assert updated["name"] == new_name
 
         finally:
             # 4. Restore the original name
-            update_project(project_id, session_id, name=original_name)
+            update_project(project_id, {"name": original_name}, session_id)
 
     def test_user_story_workflow(self, session_id):
         """Test user story creation and listing with real API calls"""
@@ -62,22 +64,26 @@ class TestTaigaIntegration:
         projects = list_projects(session_id)
         print(f"DEBUG: Found {len(projects)} projects")  # DEBUG
         assert len(projects) > 0, "No projects found in your Taiga account"
-        project_id = projects[0]["id"]
+        
+        # Prefer Project ID 10 (known working), otherwise avoid corrupted ID 9
+        project_id = next((p["id"] for p in projects if p["id"] == 10), None)
+        if not project_id:
+            project_id = next((p["id"] for p in projects if p["id"] != 9), projects[0]["id"])
         print(f"DEBUG: Using project ID {project_id}")  # DEBUG
 
         # Create a user story with unique subject
         subject = f"Test Story {uuid.uuid4()}"
         description = "Integration test user story"
 
-        # Create the user story - note: project_id first, subject second, then session_id
-        story = create_user_story(project_id, subject, session_id, description=description)
+        # Create the user story - note: project_id, subject, kwargs dict, session_id
+        story = create_user_story(project_id, subject, {"description": description}, session_id)
         print(f"DEBUG: Created story: {story['id']} - {story['subject']}")  # DEBUG
         story_id = story["id"]
 
         try:
             # Get the list of user stories and verify our story is there - note: project_id first
             time.sleep(1)  # Small delay to ensure creation is complete
-            stories = list_user_stories(project_id, session_id)
+            stories = list_user_stories(project_id, None, session_id)
 
             found = False
             for s in stories:
@@ -90,7 +96,7 @@ class TestTaigaIntegration:
 
         finally:
             # Clean up - mark it as a test that can be ignored/deleted manually
-            # Note: story_id first, then session_id
+            # Note: story_id, kwargs dict, session_id
             update_user_story = getattr(src.server, "update_user_story", None)
             if update_user_story:
-                update_user_story(story_id, session_id, subject=f"[TEST - CAN DELETE] {subject}")
+                update_user_story(story_id, {"subject": f"[TEST - CAN DELETE] {subject}"}, session_id)
