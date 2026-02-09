@@ -214,4 +214,5 @@ scripts/fetch_calendar.py
 MCP_MIGRATION_PLAN.md
 BUG_LOG.md
 API_TEST_PLAN.md
-MCP_SDK.md
+MCP_SDK.md*.skill
+build_skills.sh
