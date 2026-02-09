@@ -66,6 +66,7 @@ Do not assume Project IDs or names. Always **Orient** first by:
 1.  **Orient:**
     *   Get the project ID (ask or infer).
     *   `list_user_stories(project_id, filters={"milestone": None, "status__is_closed": False})` (The Backlog).
+    *   **Fetch Point Scheme:** Call `get_project(project_id)` (or dedicated points tool if available) to map visual values (e.g., "5", "8") to internal IDs (e.g., 79, 80). *Crucial: The API requires the internal ID.*
 2.  **Decide:**
     *   **Hygiene Check:** Identify stories missing **Points**, **Tags**, or **Acceptance Criteria**.
     *   *Heuristic:* A story without points cannot be planned.
